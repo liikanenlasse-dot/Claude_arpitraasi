@@ -116,3 +116,23 @@ Veikkaus voidaan ottaa arbitraasivertailuun vain silloin, kun tapahtuma ja 1/X/2
 ```powershell
 pytest
 ```
+
+
+## Veikkaus-diagnostiikka
+
+Jos dashboardissa näkyy `Veikkaus-kertoimia vertailussa: 0`, käytä v0.4-diagnostiikkaa. Se näyttää erikseen:
+
+- montako raakakohdetta Veikkauksen rajapinta palauttaa
+- montako niistä läpäisee FIFA World Cup -suodatuksen
+- löytyykö niille kertoimia
+- saadaanko kertoimet muunnettua 1/X/2-muotoon
+
+Komentoriviltä:
+
+```powershell
+.venv\Scripts\python.exe -m veikkaus_odds_monitor.cli diag-veikkaus
+```
+
+Dashboardissa paina vasemmalta **Diagnosoi Veikkaus-data**.
+
+Jos `raw_draws > 0` mutta `world_cup_draws = 0`, Veikkaus palauttaa kyllä kohteita, mutta niiden turnaus-/otsikkoteksti ei vastaa `TOURNAMENT_KEYWORDS`-asetusta. Jos `world_cup_draws > 0` mutta `1X2-vertailukelpoisia = 0`, kohteet löytyvät, mutta ne eivät muunnu turvallisesti h2h/1X2-muotoon.

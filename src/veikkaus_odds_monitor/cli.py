@@ -7,14 +7,15 @@ from typing import Sequence
 from .arb_monitor import scan_world_cup_arbitrage
 from .config import load_settings, normalize_games
 from .monitor import run_loop, scan_once
+from .diagnostics import diagnose_veikkaus_pipeline
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Read-only Veikkaus + World Cup odds monitor")
     parser.add_argument(
         "command",
-        choices=("scan", "loop", "arbitrage", "arb"),
-        help="scan = fetch Veikkaus once, loop = keep polling, arbitrage/arb = scan FIFA World Cup surebets from external API",
+        choices=("scan", "loop", "arbitrage", "arb", "diagnose-veikkaus", "diag-veikkaus"),
+        help="scan = fetch Veikkaus once, loop = keep polling, arbitrage/arb = scan FIFA World Cup surebets, diagnose-veikkaus = debug Veikkaus pipeline",
     )
     parser.add_argument(
         "--games",
@@ -66,6 +67,30 @@ def main(argv: Sequence[str] | None = None) -> int:
         for opportunity in opportunities:
             print("-" * 80)
             print(opportunity.format_message())
+        return 0
+
+    if args.command in {"diagnose-veikkaus", "diag-veikkaus"}:
+        summary = diagnose_veikkaus_pipeline(settings, games=games)
+        print(summary.as_dict())
+        for game in summary.games:
+            print("-" * 80)
+            print(f"{game.game}: raw_draws={game.raw_draws}, world_cup_draws={game.world_cup_draws}, quotes={game.quotes_from_selected_draws}, errors={game.errors}")
+            if game.sample_raw_titles:
+                print("  sample_raw_titles:")
+                for title in game.sample_raw_titles:
+                    print(f"    - {title}")
+            if game.sample_world_cup_titles:
+                print("  sample_world_cup_titles:")
+                for title in game.sample_world_cup_titles:
+                    print(f"    - {title}")
+            if game.sample_quote_outcomes:
+                print("  sample_quote_outcomes:")
+                for q in game.sample_quote_outcomes:
+                    print(f"    - {q}")
+        if summary.notes:
+            print("-" * 80)
+            for note in summary.notes:
+                print(f"NOTE: {note}")
         return 0
 
     parser.error(f"Unknown command: {args.command}")
