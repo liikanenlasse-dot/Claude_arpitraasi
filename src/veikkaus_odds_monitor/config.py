@@ -37,11 +37,13 @@ class Settings:
     the_odds_sport_key: str = "soccer_fifa_world_cup"
     the_odds_regions: str = "eu,uk"
     the_odds_markets: str = "h2h"
+    the_odds_outright_markets: str = "outrights"
     the_odds_odds_format: str = "decimal"
     min_arbitrage_roi: float = 0.005
     arbitrage_total_stake: float = 1000.0
     include_veikkaus_in_arbitrage: bool = True
     veikkaus_quote_max_age_seconds: int = 600
+    outright_min_outcomes: int = 16
 
 
 def _parse_games(value: str | None) -> tuple[str, ...]:
@@ -111,11 +113,13 @@ def load_settings(env_file: str | os.PathLike[str] | None = ".env") -> Settings:
         the_odds_sport_key=os.getenv("THE_ODDS_SPORT_KEY", "soccer_fifa_world_cup"),
         the_odds_regions=os.getenv("THE_ODDS_REGIONS", "eu,uk"),
         the_odds_markets=os.getenv("THE_ODDS_MARKETS", "h2h"),
+        the_odds_outright_markets=os.getenv("THE_ODDS_OUTRIGHT_MARKETS", "outrights"),
         the_odds_odds_format=os.getenv("THE_ODDS_ODDS_FORMAT", "decimal"),
         min_arbitrage_roi=_get_float("MIN_ARBITRAGE_ROI", 0.005),
         arbitrage_total_stake=_get_float("ARBITRAGE_TOTAL_STAKE", 1000.0),
         include_veikkaus_in_arbitrage=_get_bool("INCLUDE_VEIKKAUS_IN_ARBITRAGE", True),
         veikkaus_quote_max_age_seconds=_get_int("VEIKKAUS_QUOTE_MAX_AGE_SECONDS", 600),
+        outright_min_outcomes=_get_int("OUTRIGHT_MIN_OUTCOMES", 16),
     )
 
 

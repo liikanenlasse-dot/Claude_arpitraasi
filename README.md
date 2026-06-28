@@ -136,3 +136,15 @@ Komentoriviltä:
 Dashboardissa paina vasemmalta **Diagnosoi Veikkaus-data**.
 
 Jos `raw_draws > 0` mutta `world_cup_draws = 0`, Veikkaus palauttaa kyllä kohteita, mutta niiden turnaus-/otsikkoteksti ei vastaa `TOURNAMENT_KEYWORDS`-asetusta. Jos `world_cup_draws > 0` mutta `1X2-vertailukelpoisia = 0`, kohteet löytyvät, mutta ne eivät muunnu turvallisesti h2h/1X2-muotoon.
+
+
+## Käyttöliittymän välilehdet
+
+Dashboardissa on nyt erilliset osiot:
+
+1. **Otteluarbitraasit** – vertailee 1X2/h2h-ottelukertoimia. Veikkaus tulee mukaan vain, jos sen rajapinta palauttaa yksittäisiä MM-otteluita ja 1/X/2-kertoimia.
+2. **Turnausvoittaja** – vertailee outright/winner-kertoimia. Veikkauksen `Jalkapallon MM-kisat` kuuluu tähän markkinaan, ei otteluarbitraaseihin.
+3. **Veikkaus-diagnostiikka** – näyttää, löytyvätkö Veikkauksen kohteet raakadatasta, World Cup -suodatuksesta, kertoimista ja 1X2-muunnoksesta.
+4. **Veikkaus-tietokanta** – näyttää viimeksi tallennetut Veikkaus-kertoimet.
+
+Turnausvoittaja-arbitraasi lasketaan vain, jos mukana on vähintään `OUTRIGHT_MIN_OUTCOMES` eri mahdollista voittajaa. Tämä vähentää vääriä arbitraasisignaaleja, jos API palauttaa vain osittaisen outright-listan.
