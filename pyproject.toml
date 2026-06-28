@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "veikkaus-odds-monitor"
+version = "0.2.0"
+description = "Read-only Veikkaus and FIFA World Cup arbitrage odds monitor with SQLite storage, alerts and Streamlit dashboard."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "Lasse Liikanen"}
+]
+dependencies = [
+  "requests>=2.32.0",
+  "pandas>=2.2.0",
+  "python-dotenv>=1.0.1",
+]
+
+[project.optional-dependencies]
+dashboard = ["streamlit>=1.36.0"]
+test = ["pytest>=8.0.0"]
+
+[project.scripts]
+veikkaus-monitor = "veikkaus_odds_monitor.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
