@@ -40,6 +40,8 @@ class Settings:
     the_odds_odds_format: str = "decimal"
     min_arbitrage_roi: float = 0.005
     arbitrage_total_stake: float = 1000.0
+    include_veikkaus_in_arbitrage: bool = True
+    veikkaus_quote_max_age_seconds: int = 600
 
 
 def _parse_games(value: str | None) -> tuple[str, ...]:
@@ -112,6 +114,8 @@ def load_settings(env_file: str | os.PathLike[str] | None = ".env") -> Settings:
         the_odds_odds_format=os.getenv("THE_ODDS_ODDS_FORMAT", "decimal"),
         min_arbitrage_roi=_get_float("MIN_ARBITRAGE_ROI", 0.005),
         arbitrage_total_stake=_get_float("ARBITRAGE_TOTAL_STAKE", 1000.0),
+        include_veikkaus_in_arbitrage=_get_bool("INCLUDE_VEIKKAUS_IN_ARBITRAGE", True),
+        veikkaus_quote_max_age_seconds=_get_int("VEIKKAUS_QUOTE_MAX_AGE_SECONDS", 600),
     )
 
 

@@ -101,14 +101,23 @@ def calculate_arbitrage(prices: list[BestOutcomePrice], total_stake: float = 100
     )
 
 
+def _outcome_key(price: object) -> str:
+    return str(getattr(price, "outcome_key", None) or getattr(price, "outcome"))
+
+
+def _event_key(price: object) -> str:
+    return str(getattr(price, "event_key", None) or getattr(price, "event_id"))
+
+
 def best_prices_by_outcome(prices: Iterable[PriceLike]) -> dict[str, PriceLike]:
     best: dict[str, PriceLike] = {}
     for price in prices:
         if price.odds <= 1.0:
             continue
-        current = best.get(price.outcome)
+        key = _outcome_key(price)
+        current = best.get(key)
         if current is None or price.odds > current.odds:
-            best[price.outcome] = price
+            best[key] = price
     return best
 
 
@@ -141,7 +150,7 @@ def calculate_opportunity(
     guaranteed_profit = guaranteed_payout - total_stake
     legs = tuple(
         ArbitrageLeg(
-            outcome=outcome,
+            outcome=getattr(price, "outcome", outcome),
             odds=price.odds,
             bookmaker=price.bookmaker,
             stake=total_stake * (1.0 / price.odds) / implied_sum,
@@ -177,18 +186,18 @@ def find_external_arbitrages(
     """
 
     grouped: dict[tuple[str, str], list[object]] = defaultdict(list)
-    event_meta: dict[tuple[str, str], tuple[str, str | None]] = {}
+    event_meta: dict[tuple[str, str], tuple[str, str | None, str]] = {}
 
     for price in prices:
         event_id = getattr(price, "event_id")
         market = getattr(price, "market")
-        key = (event_id, market)
+        key = (_event_key(price), market)
         grouped[key].append(price)
-        event_meta[key] = (getattr(price, "event_name"), getattr(price, "commence_time"))
+        event_meta.setdefault(key, (getattr(price, "event_name"), getattr(price, "commence_time"), str(event_id)))
 
     opportunities: list[ArbitrageOpportunity] = []
-    for (event_id, market), group in grouped.items():
-        event_name, commence_time = event_meta[(event_id, market)]
+    for (group_event_key, market), group in grouped.items():
+        event_name, commence_time, event_id = event_meta[(group_event_key, market)]
         opportunity = calculate_opportunity(
             event_id=event_id,
             event_name=event_name,

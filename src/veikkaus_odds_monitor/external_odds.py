@@ -6,6 +6,8 @@ from typing import Any
 
 import requests
 
+from .normalize import EventTeams, canonical_team_key, event_key_from_teams, outcome_role
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -20,6 +22,8 @@ class ExternalOutcomePrice:
     odds: float
     bookmaker: str
     source: str = "the-odds-api"
+    event_key: str | None = None
+    outcome_key: str | None = None
 
 
 class TheOddsApiClient:
@@ -36,7 +40,7 @@ class TheOddsApiClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
-        self.session.headers.update({"Accept": "application/json", "User-Agent": "veikkaus-odds-monitor/0.2 read-only"})
+        self.session.headers.update({"Accept": "application/json", "User-Agent": "veikkaus-odds-monitor/0.3 read-only"})
 
     def get_world_cup_odds(
         self,
@@ -74,10 +78,19 @@ def parse_the_odds_api_prices(payload: Any, expected_sport_key: str = "soccer_fi
             continue
 
         event_id = str(event.get("id") or "")
-        home = event.get("home_team") or ""
-        away = event.get("away_team") or ""
+        home = str(event.get("home_team") or "")
+        away = str(event.get("away_team") or "")
         event_name = f"{home} vs {away}".strip(" vs") or event_id
         commence_time = event.get("commence_time")
+        event_key = event_key_from_teams(home, away)
+        teams = None
+        if event_key:
+            teams = EventTeams(
+                home=home,
+                away=away,
+                home_key=canonical_team_key(home),
+                away_key=canonical_team_key(away),
+            )
 
         for bookmaker in event.get("bookmakers", []) or []:
             if not isinstance(bookmaker, dict):
@@ -100,6 +113,7 @@ def parse_the_odds_api_prices(payload: Any, expected_sport_key: str = "soccer_fi
                         continue
                     if odds <= 1.0 or not name:
                         continue
+                    role = outcome_role(str(name), teams) if market_key == "h2h" else None
                     prices.append(
                         ExternalOutcomePrice(
                             event_id=event_id,
@@ -110,6 +124,8 @@ def parse_the_odds_api_prices(payload: Any, expected_sport_key: str = "soccer_fi
                             outcome=str(name),
                             odds=odds,
                             bookmaker=bookmaker_name,
+                            event_key=event_key,
+                            outcome_key=role,
                         )
                     )
     return prices
